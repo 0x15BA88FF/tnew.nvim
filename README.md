@@ -27,7 +27,10 @@ Install the plugin using your preferred package manager:
 -- packer.nvim
 use({
   "0x15ba88ff/tnew.nvim",
-  cmd = { "Tnew", "TnewList", "TnewClean" }
+  config = function()
+    require("tnew").setup()
+  end,
+  cmd = { "Tnew", "TnewList", "TnewClean" },
 })
 ````
 
