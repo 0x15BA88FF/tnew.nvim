@@ -21,6 +21,9 @@ Install the plugin using your preferred package manager:
 -- lazy.nvim
 {
   "0x15ba88ff/tnew.nvim",
+  config = function()
+    require("tnew").setup()
+  end,
   cmd = { "Tnew", "TnewList", "TnewClean" }
 }
 
