@@ -1,12 +1,9 @@
 local M = {}
 local config = require("tnew.config")
 
-local function ensure_dir()
-    vim.fn.mkdir(config.options.dir, "p")
-end
-
 local function get_note_path(ext)
-    ensure_dir()
+    vim.fn.mkdir(config.options.dir, "p")
+
     ext = ext and ext:match("^%w+$") or config.options.default_ext
     local filename = os.date(config.options.filename) .. "." .. ext
     return config.options.dir .. "/" .. filename
@@ -19,21 +16,24 @@ function M.new_temp_buffer(opts)
     vim.cmd("file " .. file)
 end
 
-function M.list_temp_files()
-    ensure_dir()
-    local files = vim.fn.globpath(config.options.dir, "*", false, true)
-    table.sort(files)
-    return files
-end
-
 function M.clean_temp_files()
-    local files = M.list_temp_files()
-    local count = 0
+    if vim.fn.isdirectory(config.options.dir) == 0 then
+        vim.notify("Tnew: No temp directory found", vim.log.levels.INFO)
+        return
+    end
 
+    local files = vim.fn.globpath(config.options.dir, "*", false, true)
+    if #files == 0 then
+        vim.notify("Tnew: No temp files to clean", vim.log.levels.INFO)
+        return
+    end
+
+    table.sort(files)
+    local count = 0
     local use_trash = config.options.delete_to_trash
-    local trash_cmd = nil
 
     if use_trash then
+        local trash_cmd = nil
         local candidates = { "trash", "gio trash", "kioclient5 move" }
 
         for _, candidate in ipairs(candidates) do
@@ -45,55 +45,35 @@ function M.clean_temp_files()
         end
 
         if not trash_cmd then
-            vim.notify("Tnew: No trash utility found")
+            vim.notify("Tnew: No trash utility found", vim.log.levels.WARN)
             return
         end
-    end
 
-    for _, file in ipairs(files) do
-        local success = false
-
-        if use_trash and trash_cmd then
+        for _, file in ipairs(files) do
             local cmd = string.format(
-                "%s %s",
-                trash_cmd,
-                vim.fn.shellescape(file)
+                "%s %s", trash_cmd, vim.fn.shellescape(file)
             )
-            success = os.execute(cmd) == 0
-        elseif not use_trash then
-            success = os.remove(file) ~= nil
+            if os.execute(cmd) == 0 then
+                count = count + 1
+            end
         end
-
-        if success then
-            count = count + 1
+    else
+        for _, file in ipairs(files) do
+            if os.remove(file) then
+                count = count + 1
+            end
         end
     end
 
     vim.notify(
-        string.format("Tnew: Deleted %d temp file(s).", count),
+        string.format("Tnew: Deleted %d temp file(s)", count),
         vim.log.levels.INFO
     )
 end
 
 function M.register()
-    vim.api.nvim_create_user_command(
-        "Tnew",
-        M.new_temp_buffer, { nargs = "?" }
-    )
-
-    vim.api.nvim_create_user_command(
-        "TnewList",
-        function()
-            for _, f in ipairs(M.list_temp_files()) do
-                print(f)
-            end
-        end, {}
-    )
-
-    vim.api.nvim_create_user_command(
-        "TnewClean",
-        M.clean_temp_files, {}
-    )
+    vim.api.nvim_create_user_command("Tnew", M.new_temp_buffer, { nargs = "?" })
+    vim.api.nvim_create_user_command("TnewClean", M.clean_temp_files, {})
 end
 
 return M
