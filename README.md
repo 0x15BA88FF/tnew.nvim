@@ -5,7 +5,6 @@ A simple Neovim plugin for managing temporary scratch files.
 ## ✨ Features
 
 - Create a new scratch file
-- List all saved temp files
 - Delete or move temp files to trash
 
 ## ⚡️ Requirements
@@ -46,7 +45,7 @@ use({
   dir = vim.fn.stdpath("cache") .. "/tnew", -- Where to store temp files
   filename = "%Y-%m-%d_%H-%M-%S",           -- Format for filenames
   default_ext = "md",                       -- Default file extension
-  delete_to_trash = true                    -- Move files to trash instead of deleting permanently
+  delete_to_trash = false                    -- Move files to trash instead of deleting permanently
 }
 ```
 
@@ -58,7 +57,6 @@ Configuration is optional — it works out of the box.
 | ------------ | ----------------------------------------------- |
 | `:Tnew`      | Open a new temp file with the default extension |
 | `:Tnew md`   | Open a new temp file with the `.md` extension   |
-| `:TnewList`  | List all temp files                             |
 | `:TnewClean` | Delete or move all temp files to trash          |
 
 ## 📄 License
