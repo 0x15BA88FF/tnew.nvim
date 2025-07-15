@@ -24,7 +24,7 @@ Install the plugin using your preferred package manager:
   config = function()
     require("tnew").setup()
   end,
-  cmd = { "Tnew", "TnewList", "TnewClean" }
+  cmd = { "Tnew", "TnewClean" }
 }
 
 -- packer.nvim
@@ -33,7 +33,7 @@ use({
   config = function()
     require("tnew").setup()
   end,
-  cmd = { "Tnew", "TnewList", "TnewClean" },
+  cmd = { "Tnew", "TnewClean" },
 })
 ````
 
